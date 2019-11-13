@@ -11,26 +11,24 @@ import os
 import re
 
 def img_tag(tag):
-    # return tag.name=="li" and not tag.has_attr('class') and tag.has_attr('style')
-    return tag.name == "img" and tag.has_attr('src') and re.match(r"https://manhua.qpic.cn", tag.attrs["src"])
-    # <img src="https://manhua.qpic.cn/manhua_detail/0/27_15_14_ab3bdc18244b37047f94c9d221e13904_32776.jpg/0" data-pid="32776" data-w="1200" data-h="1752" class="loaded" alt="">
-    # <img src="//ac.gtimg.com/media/images/pixel.gif" alt="" data-pid="32784" data-w="1200" data-h="1752">
-    # <div style="margin:1px auto 0; width:100px; height:43px; background:transparent url(https://exhentai.org/m/001510/1510427-00.jpg) -0px 0 no-repeat"><a href="https://exhentai.org/s/18e0511c82/1510427-1"><img alt="001" title="Page 1: P000A.jpg" src="https://exhentai.org/img/blank.gif" style="width:100px; height:42px; margin:-1px 0 0 -1px"><br>001</a></div>
-    # <img id="img" src="https://ookgnprvpxzeaqywfcbh.hath.network/h/228074c0d23359c0f3fd204362a9ce85c16853fc-240443-1280-550-jpg/keystamp=1572658500-93014ef7c3;fileindex=74442858;xres=1280/P000A.jpg" style="width: 1280px; height: 550px; max-width: 718px; max-height: 309px;" onerror="this.onerror=null; nl('31137-436849')">
+    return tag.name == "img" and tag.has_attr("data-h") and not tag.has_attr("class")
 
 if __name__ == "__main__":
     if not os.path.exists("./download"):
         os.mkdir("./download")
 
     url = "http://www.hanhuazu.cc/comics/detail/11759"
-    url = "https://ac.qq.com/ComicView/index/id/505430/cid/977"
+    url = "https://ac.qq.com/ComicView/index/id/505430/cid/981"
     # url = input("URL: ")
 
 
     chrome_option = webdriver.ChromeOptions()
-    # chrome_option.add_argument("--headless")
+    prefs = {"profile.managed_default_content_settings.images":2}
+    chrome_option.add_experimental_option("prefs",prefs)
+    chrome_option.add_argument("--headless")
     chrome_option.add_argument("--disable-gpu")
     browser = webdriver.Chrome(options=chrome_option)
+    chrome_option.add_argument('user-agent="Mozilla/5.0(X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11"')
     browser.implicitly_wait(10)
 
     if re.search(r"hanhuazu", url):
@@ -93,14 +91,36 @@ if __name__ == "__main__":
         soup = BeautifulSoup(browser.page_source, "lxml")
         name = soup.find("span", attrs={"class":"title-comicHeading"}).contents[0]
 
+        browser.find_element_by_id("crossPage").click()
 
-        browser.execute_script("var q=document.body.scrollTop=10000")
-        time.sleep(1)
+
         soup = BeautifulSoup(browser.page_source, "lxml")
-        # print(soup.prettify())
-        # comic = soup.find("ul", attrs={"class":"comic-contain"})
-        # imgs = soup.find_all("li", attrs={"style":re.compile("width.?")})
         imgs = soup.find_all(img_tag)
+
+        print("Creating ./download/{0}...".format(name))
+        if not os.path.exists("./download/"+name):
+            os.mkdir("./download/"+name)
+        print("Getting imgs...")
+        urls = []
+        for img in imgs:
+            try:
+                urls.append(img.attrs["data-src"])
+            except:
+                urls.append(img.attrs["src"])
+        # print(urls)
+        urls.reverse()
+        print("  Totally {0} images".format(len(urls)))
+        for i in range(len(urls)):
+            print("    Img {0}/{1}".format(i+1, len(urls)))
+            file_name = str(i+1)
+            if len(file_name) == 1:
+                file_name = "0" + file_name
+            file_name = file_name + ".jpg" 
+            if not os.path.exists("./download/"+name+"/"+file_name):
+                print("      Downloading...")
+                urllib.request.urlretrieve(urls[i], "./download/"+name+"/"+file_name)
+            else:
+                print("      File exists")
         pass
     else:
         print("What the hell is this?")
