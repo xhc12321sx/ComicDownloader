@@ -12,6 +12,7 @@ import re
 
 def img_tag(tag):
     return tag.name == "img" and tag.has_attr("data-h") and not tag.has_attr("class")
+    
 
 if __name__ == "__main__":
     if not os.path.exists("./download"):
