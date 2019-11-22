@@ -18,8 +18,8 @@ if __name__ == "__main__":
         os.mkdir("./download")
 
     url = "http://www.hanhuazu.cc/comics/detail/11759"
-    url = "https://ac.qq.com/ComicView/index/id/505430/cid/981"
-    # url = input("URL: ")
+    url = "https://ac.qq.com/ComicView/index/id/505430/cid/982"
+    url = input("URL: ")
 
 
     chrome_option = webdriver.ChromeOptions()
