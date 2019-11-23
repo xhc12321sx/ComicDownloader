@@ -1,1 +1,1 @@
-echo # ShuhuiDownloader
+# ShuhuiDownloader
