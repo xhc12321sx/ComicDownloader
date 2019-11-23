@@ -8,7 +8,7 @@ if __name__ == "__main__":
         os.mkdir("./download")
 
     # a = spider(headless=False, dtLoadPicture=False)
-    a = spider()
+    a = spider(headless=False)
     # url = input("Url:")
     url = "http://www.mangabz.com/38bz/"
 
@@ -18,7 +18,13 @@ if __name__ == "__main__":
         a.browser.get(url)
         a.browser.find_element_by_class_name("detail-list-form-more").click()
         urls = a.browser.find_elements_by_class_name("detail-list-form-item")
+        print("Totally {0} comics".format(len(urls)))
         for i in range(len(urls)):
             urls[i]= urls[i].get_attribute("href")
         urls.reverse()
+        i = 1
+        for url in urls:
+            print("No. {0}:".format(i))
+            a.get_url(url)
+            i += 1
         pass

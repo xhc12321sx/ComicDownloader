@@ -59,7 +59,7 @@ class spider(object):
 
 class mangabzspider(spider):
     def start_browser(self):
-        print("Mangabz.com spider v 0.0")
+        print("Mangabz.com spider v 0.5")
         self.boot_up_browser()
 
     def get_url(self, url):
@@ -70,24 +70,30 @@ class mangabzspider(spider):
         print(title)
 
         if not os.path.exists("./download/"+title):
-            os.mkdir("./download/"+title)
+            # not finished
+            if not os.path.exists("./download/"+title+"_ongoing"):
+                os.mkdir("./download/"+title+"_ongoing")
 
-        a = self.browser.find_element_by_class_name("bottom-page2")
-        pages = int(re.search(r"[1-9][0-9]*", re.search(r"-[1-9][0-9]*", a.text).group()).group())
-        urls = [None] * pages
-        filenames = [None] * pages
-        print("Totally {0} pages, processing...".format(pages))
-        
-        url1 = url[:-1]
-        for i in range(1, pages+1):
-            print("  Page {0}".format(i))
-            self.browser.get(url1+"-p"+str(i))
-            urls[i - 1] = self.browser.find_element_by_id("cp_image").get_attribute("src")
-            _format = re.search(r"\..*\?", re.search(r"com.*\?",urls[i-1]).group()).group()[:-1]
-            filenames[i-1] = "{0:03d}".format(i) + _format
-            pass
+            a = self.browser.find_element_by_class_name("bottom-page2")
+            pages = int(re.search(r"[1-9][0-9]*", re.search(r"-[1-9][0-9]*", a.text).group()).group())
+            urls = [None] * pages
+            filenames = [None] * pages
+            print("Totally {0} pages, processing...".format(pages))
+            
+            url1 = url[:-1]
+            for i in range(1, pages+1):
+                print("  Page {0}".format(i))
+                self.browser.get(url1+"-p"+str(i))
+                urls[i - 1] = self.browser.find_element_by_id("cp_image").get_attribute("src")
+                _format = re.search(r"\..*\?", re.search(r"com.*\?",urls[i-1]).group()).group()[:-1]
+                filenames[i-1] = "{0:03d}".format(i) + _format
+                pass
 
-        self.download(urls, filenames, "./download/"+title)
+            self.download(urls, filenames, "./download/"+title+"_ongoing")
+            os.rename("./download/"+title+"_ongoing", "./download/"+title)
+        else:
+            print("  File exists")
+
         pass
 
 
