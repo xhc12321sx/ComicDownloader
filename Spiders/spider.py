@@ -23,7 +23,7 @@ class spider(object):
         if disableGPU == True:
             self.chrome_option.add_argument("--disable-gpu")
 
-        self.chrome_option.add_argument('user-agent="Mozilla/5.0(X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11"')
+        self.chrome_option.add_argument('user-agent=Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.163 Safari/535.1')
 
         self.browser = None
 
@@ -43,11 +43,57 @@ class spider(object):
     def img_tag(self):
         pass
 
-    def dowoload(self):
+    def download(self, urls, filenames, path):
+        print("Start downloading...")
+        l = len(urls)
+
+        opener = urllib.request.build_opener()
+        opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.163 Safari/535.1')]
+        urllib.request.install_opener(opener)
+
+        for i in range(l):
+            print("  page {0:03d}/{1}".format(i + 1, l))        
+            urllib.request.urlretrieve(urls[i], path + "/" + filenames[i])
         pass
 
 
-class TencentComicSpider(spider):
+class mangabzspider(spider):
+    def start_browser(self):
+        print("Mangabz.com spider v 0.0")
+        self.boot_up_browser()
+
+    def get_url(self, url):
+        print("Getting url...")
+        self.browser.get(url)
+
+        title = self.browser.title
+        print(title)
+
+        if not os.path.exists("./download/"+title):
+            os.mkdir("./download/"+title)
+
+        a = self.browser.find_element_by_class_name("bottom-page2")
+        pages = int(re.search(r"[1-9][0-9]*", re.search(r"-[1-9][0-9]*", a.text).group()).group())
+        urls = [None] * pages
+        filenames = [None] * pages
+        print("Totally {0} pages, processing...".format(pages))
+        
+        url1 = url[:-1]
+        for i in range(1, pages+1):
+            print("  Page {0}".format(i))
+            self.browser.get(url1+"-p"+str(i))
+            urls[i - 1] = self.browser.find_element_by_id("cp_image").get_attribute("src")
+            _format = re.search(r"\..*\?", re.search(r"com.*\?",urls[i-1]).group()).group()[:-1]
+            filenames[i-1] = "{0:03d}".format(i) + _format
+            pass
+
+        self.download(urls, filenames, "./download/"+title)
+        pass
+
+
+
+
+class tencentcomicspider(spider):
     def start_browser(self):
         print("Tencent Spider v 1.0")
         self.boot_up_browser()
@@ -106,5 +152,8 @@ class TencentComicSpider(spider):
         return tag.name == "img" and tag.has_attr("data-h") and not tag.has_attr("class")
 
 if __name__ == "__main__":
-    a = TencentComicSpider()
+    a = mangabzspider(headless=False, dtLoadPicture=True)
+    url = "http://www.mangabz.com/m66436/"
+    url = "http://www.mangabz.com/m45177/"
+    a.get_url(url)
     pass
